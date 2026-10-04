@@ -40,7 +40,7 @@ FIXTURES = ROOT / "tests" / "fixtures"
 ROSTER = ["Steward", "Architect", "Inspector", "Warden", "Editor"]
 DEFAULT_REPO = "witt3rd/review-council-fixtures"
 CALLER_PATH = ".github/workflows/review-council.yml"
-FIRST_LINE = re.compile(r"^(\w+): (?:(\d+) findings? \((\d+) BLOCK, (\d+) FIX, (\d+) NOTE\)|no findings\b)")
+FIRST_LINE = re.compile(r"^(\w+): (?:(\d+) findings? \(([^)]*)\)|no findings\b)")
 
 
 def sh(*args, cwd=None, capture=True):
@@ -135,9 +135,12 @@ def parse_review(body):
     m = FIRST_LINE.match(review_line(body))
     if not m:
         return None
-    if m.group(2) is None:
-        return {"BLOCK": 0, "FIX": 0, "NOTE": 0}
-    return {"BLOCK": int(m.group(3)), "FIX": int(m.group(4)), "NOTE": int(m.group(5))}
+    counts = {"BLOCK": 0, "FIX": 0, "NOTE": 0}
+    if m.group(2) is not None:
+        # "(1 BLOCK, 2 FIX, 0 NOTE)"; a reviewer may leave out a zero count.
+        for n, sev in re.findall(r"(\d+) (BLOCK|FIX|NOTE)", m.group(3)):
+            counts[sev] = int(n)
+    return counts
 
 
 def score_pr(repo, name, sha):
@@ -178,7 +181,7 @@ def score_pr(repo, name, sha):
         else:
             if counts["BLOCK"] > 0:
                 result["problems"].append(f"{r} raised {counts['BLOCK']} BLOCK outside the planted scope")
-            if verdict != "success":
+            if verdict != "success" and not expect.get("owner_verdict_only"):
                 result["problems"].append(f"{r} verdict is {verdict}, expected success")
     result["pass"] = not result["pending"] and not result["problems"]
     if not result["pending"]:
