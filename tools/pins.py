@@ -53,7 +53,9 @@ def report(callers, council):
         if text is None:
             rows.append((repo, "-", "unreadable with this token, or no caller"))
             continue
-        pins = [m for m in PIN.findall(text) if m[0] == council]
+        # The template's commented-out Editor job is no pin.
+        live = "\n".join(l for l in text.splitlines() if not l.lstrip().startswith("#"))
+        pins = [m for m in PIN.findall(live) if m[0] == council]
         if not pins:
             rows.append((repo, "-", "no council pin found"))
             continue

@@ -49,3 +49,10 @@ judged by the law it started from and a PR cannot weaken its own judge.
 - Draft and fork PRs are not reviewed (a fork gets no secrets); the owner's
   ruleset bypass covers forks.
 - Spend bills to you: about $0.80 for five reviewers on a small PR.
+
+## Checks that guard the caller
+
+`tests/caller_test.py` fills the template as an adopter would and checks it
+against the locks it calls (inputs, secrets, permissions, full-SHA pins, drafts
+and forks skipped) and runs the pin report on it. Per-repo notes:
+`docs/callers/rung.md`, `docs/callers/publishing.md`.
