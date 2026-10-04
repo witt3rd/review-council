@@ -1,0 +1,5 @@
+{
+  "title": "Add --json output",
+  "body": "Adds a `--json` flag that prints the line and word counts as one JSON object, for scripts.\n\nREADME and CHANGELOG are updated.",
+  "expect": {"owner": "Steward", "owner_min": "FIX"}
+}

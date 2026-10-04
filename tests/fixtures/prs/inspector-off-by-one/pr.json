@@ -1,0 +1,5 @@
+{
+  "title": "Break ties in --top alphabetically",
+  "body": "`Counter.most_common` orders equal counts by first appearance, so the same words in a different order gave a different `--top` list. `top_words` now sorts equal counts alphabetically. Adds a test.",
+  "expect": {"owner": "Inspector", "owner_min": "BLOCK"}
+}

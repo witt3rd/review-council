@@ -1,0 +1,5 @@
+{
+  "title": "Document how large files and repeats are counted",
+  "body": "Adds a paragraph to `docs/usage.md` on large files, repeated words and what `--top` leaves out.",
+  "expect": {"owner": "Editor", "owner_min": "FIX"}
+}

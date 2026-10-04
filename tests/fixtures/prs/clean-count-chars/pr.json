@@ -1,0 +1,5 @@
+{
+  "title": "Add core.count_chars",
+  "body": "Adds `core.count_chars`, the number of characters in a text, newlines included, with a test and a changelog line. Nothing calls it yet from the command line, so no flag changes.",
+  "expect": {"owner": null}
+}
