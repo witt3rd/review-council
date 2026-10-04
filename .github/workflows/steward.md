@@ -83,5 +83,4 @@ Check the changed files (Rounds) against:
 
 Not yours, drop it: whether the code works (Inspector); who may act, secrets
 and abuse (Warden); contracts, boundaries, layer necessity (Architect);
-whether a sentence reads one way, or uses a term the docs define in another
-sense (Editor).
+whether a sentence reads one way (Editor).
