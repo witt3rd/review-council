@@ -1,0 +1,41 @@
+name: eval
+
+# Re-scores a candidate's golden PRs from Actions, so anyone can check an eval
+# record without trusting the machine that wrote it. Opening the PRs needs
+# push rights on the fixture repo and runs from an operator's checkout
+# (`tests/eval/eval.py run`, CONTRIBUTING.md); scoring needs only read access,
+# because the fixture repo is public.
+on:
+  workflow_dispatch:
+    inputs:
+      sha:
+        description: "council commit the fixture PRs ran (full SHA)"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  score:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: The input is a full SHA
+        env:
+          SHA: ${{ inputs.sha }}
+        run: '[[ "$SHA" =~ ^[0-9a-f]{40}$ ]] || { echo "::error::sha is not a full commit SHA"; exit 1; }'
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.sha }}
+          persist-credentials: false
+      - name: Score
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ inputs.sha }}
+        run: python3 tests/eval/eval.py score --sha "$SHA" --out "$RUNNER_TEMP/eval.json" | tee -a "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: eval-${{ inputs.sha }}
+          path: ${{ runner.temp }}/eval.json

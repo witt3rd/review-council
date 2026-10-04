@@ -72,6 +72,12 @@ safe-outputs:
     # so a clean review is a COMMENT and the verdict status carries the pass.
     allowed-events: [COMMENT, REQUEST_CHANGES]
     supersede-older-reviews: true
+  # The council writes reviews and statuses to the caller, never issues: a
+  # failed verdict is the red status, a failed run is visible in Actions.
+  report-failed-jobs: false
+  report-failure-as-issue: false
+  threat-detection:
+    report-as-issue: false
   messages:
     footer: "> [${{ github.aw.import-inputs.name }} · review-council]({run_url})"
 ---

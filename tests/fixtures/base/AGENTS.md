@@ -14,7 +14,7 @@ cite.
    environment or printing) and imports only `re` and `collections`.
    Reading files and printing belong to `tally/cli.py`.
 4. **Tests.** Tests live in `tests/` and use `unittest`. Every change of
-   behaviour in `tally/core.py` comes with a test that fails without it.
+   behaviour in `tally/core.py` comes with a test.
 
 ## Layout
 

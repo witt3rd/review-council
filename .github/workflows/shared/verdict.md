@@ -11,7 +11,8 @@
 # The status is pending while the review runs, so a rerun never leaves an
 # older pass standing, and red when this run's review requests changes or
 # counts a BLOCK, when the review is of another commit, or when this run
-# posted no review. All reviewers post as one identity (GITHUB_TOKEN) in one
+# posted no review, or when threat detection flagged the review. All
+# reviewers post as one identity (GITHUB_TOKEN) in one
 # run, so a review is this reviewer's only when it is a bot's, quotes this
 # run's URL and its first line starts with the reviewer's name.
 #
@@ -70,7 +71,10 @@ jobs:
               if (!pull_number || !/^[0-9a-f]{40}$/.test(head)) return { fail: 'This run names no pull request head.' };
               const reviews = await github.paginate(github.rest.pulls.listReviews, { ...context.repo, pull_number, per_page: 100 });
               const mine = new RegExp(`/actions/runs/${context.runId}(?!\\d)`);
-              const first = r => (r.body || '').split('\n')[0].trim();
+              // The reviewer's line is the first that is not blank and not part
+              // of a leading quote: gh-aw quotes a caution above a review that
+              // threat detection flagged.
+              const first = r => ((r.body || '').split('\n').map(l => l.trim()).find(l => l && !l.startsWith('>')) || '');
               // A bot's only (a person with write can post a review that quotes
               // this run's URL), and this reviewer's only (every reviewer of the
               // run quotes the same URL).
@@ -81,6 +85,9 @@ jobs:
               core.info(`${review.html_url}\n${review.state}: ${line}`);
               const url = review.html_url;
               if (review.commit_id !== head) return { url, fail: `The review is of ${String(review.commit_id).slice(0, 7)}, not ${head.slice(0, 7)}.` };
+              // Threat detection posts a flagged review with a caution; a person
+              // reads it before it can pass.
+              if ((review.body || '').includes('<!-- gh-aw-threat-detected -->')) return { url, fail: `Threat detection flagged this review; a person must read it. ${line}` };
               const blocks = Number((line.match(/\((\d+) BLOCK/) || [])[1] || 0);
               if (review.state === 'CHANGES_REQUESTED' || blocks > 0) return { url, fail: line };
               if (review.state !== 'COMMENTED') return { url, fail: `Review state ${review.state}.` };

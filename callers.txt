@@ -1,0 +1,4 @@
+# Every repo known to call the council, one owner/repo per line. tools/pins.py
+# reads each one's .github/workflows/review-council.yml and reports its pins
+# against the newest release. Add a repo here in the PR that adds its caller.
+witt3rd/review-council-fixtures

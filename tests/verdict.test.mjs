@@ -120,6 +120,18 @@ test('the status is named for the reviewer, never the workflow', async () => {
   assert.equal(statuses[0].state, 'success');
 });
 
+test('a review under a threat-detection caution is found, and fails', async () => {
+  const caution = '> [!CAUTION]\n> agentic threat detected\n> <!-- gh-aw-threat-detected -->\n>\n';
+  const { statuses } = await run([review({ body: `${caution}\nSteward: no findings in written law.\n${RUN_URL}` })]);
+  assert.equal(statuses[0].state, 'failure');
+  assert.match(statuses[0].description, /^Threat detection flagged this review/);
+});
+
+test('a quoted line above the review line does not hide it', async () => {
+  const { statuses } = await run([review({ body: `> a note\n\nSteward: no findings in written law.\n${RUN_URL}` })]);
+  assert.equal(statuses[0].state, 'success');
+});
+
 test('a run with no pull request head writes no status and fails', async () => {
   const { statuses, failed } = await run([review()], { HEAD_SHA: '', PR_NUMBER: '' });
   assert.equal(statuses.length, 0);

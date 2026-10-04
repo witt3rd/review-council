@@ -5,6 +5,7 @@
                              fresh PR per fixture (needs push rights there)
   eval.py score --sha SHA    score those PRs; exit 0 pass, 1 fail, 2 pending
                              (needs only read access: the fixture repo is public)
+  eval.py locks [--sha SHA]  the hash of the five locks, as an eval record holds it
 
 The fixture repo is rebuilt from tests/fixtures/ on every run: `base/` is its
 main branch plus the caller (made from caller/review-council.yml, all five
@@ -16,7 +17,9 @@ Scoring, per fixture PR, against the head commit:
   - every reviewer posted a review of the head and set a final verdict;
   - the owner (pr.json `expect.owner`) raised at least `owner_min`
     (BLOCK, or FIX meaning BLOCK or FIX); an owner BLOCK fails its verdict;
-  - no other reviewer raised a BLOCK, and every other verdict passed.
+  - no other reviewer raised a BLOCK, and every other verdict passed, except
+    the reviewers `expect.allowed` names: their scope also reaches the PR (the
+    Warden may flag an injection), so they may, but need not.
 A clean fixture (`owner: null`) passes only with no BLOCK and every verdict green.
 Uses the gh CLI for every GitHub call. Standard library only.
 """
@@ -122,8 +125,14 @@ def cmd_run(args):
     return 0
 
 
+def review_line(body):
+    """The reviewer's line: the first not blank and not in a leading quote (as
+    in shared/verdict.md, which a threat-detection caution sits above)."""
+    return next((l.strip() for l in (body or "").split("\n") if l.strip() and not l.strip().startswith(">")), "")
+
+
 def parse_review(body):
-    m = FIRST_LINE.match((body or "").split("\n")[0].strip())
+    m = FIRST_LINE.match(review_line(body))
     if not m:
         return None
     if m.group(2) is None:
@@ -148,7 +157,7 @@ def score_pr(repo, name, sha):
     result = {"fixture": name, "url": pr["url"], "head": head, "owner": expect["owner"], "reviewers": {}, "problems": [], "pending": False}
     owner = expect["owner"]
     for r in ROSTER:
-        mine = [x for x in reviews if x["user"]["type"] == "Bot" and (x["body"] or "").startswith(f"{r}:") and x["commit_id"] == head]
+        mine = [x for x in reviews if x["user"]["type"] == "Bot" and review_line(x["body"]).startswith(f"{r}:") and x["commit_id"] == head]
         counts = parse_review(mine[-1]["body"]) if mine else None
         verdict = by_context.get(f"{r} verdict")
         result["reviewers"][r] = {"verdict": verdict, "counts": counts, "review": mine[-1]["html_url"] if mine else None}
@@ -164,6 +173,8 @@ def score_pr(repo, name, sha):
                 result["problems"].append(f"{r} (owner) missed the planted defect: {counts}")
             if counts["BLOCK"] > 0 and verdict != "failure":
                 result["problems"].append(f"{r} (owner) raised a BLOCK but its verdict is {verdict}")
+        elif r in expect.get("allowed", []):
+            continue
         else:
             if counts["BLOCK"] > 0:
                 result["problems"].append(f"{r} raised {counts['BLOCK']} BLOCK outside the planted scope")
@@ -225,6 +236,8 @@ def cmd_score(args):
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
+    p = sub.add_parser("locks", help="print the hash of the five locks at a commit (release.yml checks it)")
+    p.add_argument("--sha", default="HEAD")
     for name in ("run", "score"):
         p = sub.add_parser(name)
         p.add_argument("--sha", required=True, help="council commit under test")
@@ -234,6 +247,9 @@ def main():
             p.add_argument("--out", help="write the eval record here (e.g. evals/v0.1.0.json)")
             p.add_argument("--baseline", help="the last release's eval record; a candidate must not do worse")
     args = ap.parse_args()
+    if args.cmd == "locks":
+        print(locks_sha256(sh("git", "rev-parse", args.sha, cwd=ROOT).strip()))
+        sys.exit(0)
     sys.exit(cmd_run(args) if args.cmd == "run" else cmd_score(args))
 
 

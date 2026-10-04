@@ -17,6 +17,11 @@ engine:
   # none of its agent configuration (CLAUDE.md, .claude/, hooks).
   bare: true
   model: ${{ inputs.model }}
+  # gh-aw's default runs one agent job per workflow at a time in a repo, so
+  # one reviewer's reviews of different PRs would queue behind each other.
+  # One PR at a time per reviewer is enough: a newer push cancels the caller.
+  concurrency:
+    group: "review-council-${{ github.aw.import-inputs.id }}-${{ github.event.pull_request.number }}"
   env:
     # Claude Code appends /v1/messages itself, so no /v1 here.
     ANTHROPIC_BASE_URL: "https://openrouter.ai/api"
