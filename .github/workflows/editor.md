@@ -11,6 +11,10 @@ on:
         description: "OpenRouter model id the reviewer runs on"
         type: string
         default: anthropic/claude-sonnet-5
+      reviewer:
+        description: "Leave unset. gh-aw names a called workflow's artifacts by a hash of its inputs; this default, different in each reviewer, keeps the artifacts of reviewers called in one run apart"
+        type: string
+        default: editor
     secrets:
       OPENROUTER_API_KEY:
         description: "The caller repo's own OpenRouter key"

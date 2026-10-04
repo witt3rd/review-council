@@ -97,6 +97,10 @@ class Scope(unittest.TestCase):
             self.assertEqual(fm["imports"], [{"uses": "shared/contract.md", "with": {"name": name, "id": name.lower()}}])
             self.assertTrue(fm["description"].startswith(f"Review council, {name}: "))
             self.assertIs(fm.get("inlined-imports"), True, f"{name}: inlined-imports must be true")
+            # The `reviewer` input's default is the one per-reviewer value: it
+            # keeps the artifacts of reviewers called in one run apart.
+            inputs = fm["on"]["workflow_call"]["inputs"] if "on" in fm else fm[True]["workflow_call"]["inputs"]
+            self.assertEqual(inputs.pop("reviewer")["default"], name.lower())
             shapes[name] = {k: v for k, v in fm.items() if k not in ("description", "imports")}
         first = shapes[ROSTER[0]]
         for name, shape in shapes.items():
