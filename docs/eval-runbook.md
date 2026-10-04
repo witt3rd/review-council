@@ -70,3 +70,15 @@ Add `tests/fixtures/prs/<name>/` with `files/` (laid over `base/`) and
 `pr.json` (`title`, `body`, `expect.owner`, `owner_min` `BLOCK` or `FIX`,
 optional `allowed`, `owner_verdict_only`). Keep it free of consumer names.
 A new fixture changes the denominator, so rebaseline the next record.
+
+## One command, with a spend cap
+
+```bash
+python3 tests/eval/suite.py --sha <candidate> --baseline evals/<last>.json [--max-usd 8] [--only NAME ...] [--dry-run]
+```
+
+`tests/eval/suite.py` runs, waits for the reviews and scores. It estimates the
+spend from the baseline record and refuses (exit 3) when that is over
+`--max-usd`; after scoring it fails (exit 1) when measured spend exceeded the
+cap or a fixture regressed; exit 2 means reviews were still pending at
+`--timeout`. With `--only`, the baseline is cut to the chosen fixtures first, so a passing subset is no regression. `--dry-run` prints the estimate and commands and spends nothing.
