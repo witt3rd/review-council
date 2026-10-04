@@ -2,8 +2,10 @@
 
 import importlib.util
 import json
+import subprocess
 import tempfile
 import unittest
+from unittest import mock
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -40,6 +42,23 @@ class Suite(unittest.TestCase):
 
     def test_dry_run_spends_nothing(self):
         self.assertEqual(self.run_main("--dry-run"), 0)
+
+    def test_subset_against_full_baseline_is_no_regression(self):
+        full = {"fixtures": [{"fixture": "a", "cost_usd": 1.0, "pass": True}, {"fixture": "b", "cost_usd": 2.0, "pass": True}],
+                "passed": 2, "total": 2}
+        seen = {}
+
+        def fake_run(cmd, **kw):
+            if "score" in cmd:
+                seen["baseline"] = json.loads(Path(cmd[cmd.index("--baseline") + 1]).read_text())
+                rec = {"cost_usd": 1.0, "pass": True, "passed": 1, "total": 1}
+                return subprocess.CompletedProcess(cmd, 0, stdout=json.dumps(rec))
+            return subprocess.CompletedProcess(cmd, 0)
+
+        with mock.patch.object(suite.subprocess, "run", fake_run):
+            code = self.run_main("--only", "a", baseline=full)
+        self.assertEqual(code, 0)
+        self.assertEqual((seen["baseline"]["passed"], seen["baseline"]["total"]), (1, 1))
 
 
 if __name__ == "__main__":

@@ -20,6 +20,7 @@ import argparse
 import json
 import subprocess
 import sys
+import tempfile
 import time
 from pathlib import Path
 
@@ -37,6 +38,14 @@ def estimate(baseline, only):
             return None
     cost = sum(f.get("cost_usd", 0) for f in fx)
     return round(cost, 4) if cost else None
+
+
+def restrict(baseline, only):
+    """The baseline limited to the chosen fixtures, with passed/total recomputed."""
+    if not only:
+        return baseline
+    fx = [f for f in baseline["fixtures"] if f["fixture"] in only]
+    return {**baseline, "fixtures": fx, "passed": sum(1 for f in fx if f.get("pass")), "total": len(fx)}
 
 
 def verdict(record, max_usd):
@@ -76,8 +85,15 @@ def main(argv=None):
         print("refused: the estimate is over the cap; raise --max-usd or choose --only", file=sys.stderr)
         return 3
 
+    with tempfile.TemporaryDirectory() as d:
+        base_file = Path(d) / "baseline.json"
+        base_file.write_text(json.dumps(restrict(baseline, a.only)))
+        return execute(a, str(base_file))
+
+
+def execute(a, baseline_path):
     common = ["--sha", a.sha] + (["--repo", a.repo] if a.repo else []) + (["--only", *a.only] if a.only else [])
-    score = eval_cmd("score", *common, "--baseline", a.baseline) + (["--out", a.out] if a.out else [])
+    score = eval_cmd("score", *common, "--baseline", baseline_path) + (["--out", a.out] if a.out else [])
     if a.dry_run:
         print("would run:", " ".join(eval_cmd("run", *common)))
         print("would score:", " ".join(score))
