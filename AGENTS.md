@@ -19,7 +19,7 @@ The council holds no key and no consumer's law.
    The council reads it and `AGENTS.md` from the PR's **base** commit.
 3. Set the repo secret `OPENROUTER_API_KEY` (the repo's own key).
 4. Require `<Reviewer> verdict` for each called reviewer in the branch ruleset.
-5. Add the repo to `callers.txt` here, so the pin report sees it.
+5. Add the repo to `callers.txt` here, so the pin report (`pins.yml`) sees it.
 
 Runs on every non-draft, same-repo PR event (opened, reopened, ready, each
 push); a newer push cancels the older head's review. Fork PRs get no secrets,

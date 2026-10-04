@@ -45,7 +45,7 @@ Evals (`evals/v0.1.0.json`): 7/7 golden PRs passed on candidate 45ad2fe, every
 planted defect caught by its owner, the clean PR green throughout, the
 injected PR still red on its bug; about $5.68 of model spend on
 `anthropic/claude-sonnet-5` for the passing pass (35 reviewer runs plus threat
-detection), about $27 across all eval runs while building it. Live: the first
+detection), about $28 across all eval runs while building it. Live: the first
 cross-repo run on a real repo, https://github.com/witt3rd/rung/pull/174, on the
 same locks.
 
