@@ -24,8 +24,8 @@ The council holds no key and no consumer's law.
 Runs on every non-draft, same-repo PR event (opened, reopened, ready, each
 push); a newer push cancels the older head's review. Fork PRs get no secrets,
 so they get no verdict: the owner's ruleset bypass covers them. Actions
-minutes and model spend bill to the caller (about $0.70 for five reviewers on
-a small PR, measured in the evals).
+minutes and model spend bill to the caller (about $0.80 for five reviewers on
+a small PR on Claude Sonnet 5, measured in the evals).
 
 ## Invariants (a small edit can break these)
 

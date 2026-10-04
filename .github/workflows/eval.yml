@@ -12,6 +12,10 @@ on:
         description: "council commit the fixture PRs ran (full SHA)"
         required: true
         type: string
+      record:
+        description: "optional: an eval record on the default branch (evals/vX.Y.Z.json) whose PRs to re-score"
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -21,19 +25,30 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - name: The input is a full SHA
+      - name: The inputs are a full SHA and a record path
         env:
           SHA: ${{ inputs.sha }}
-        run: '[[ "$SHA" =~ ^[0-9a-f]{40}$ ]] || { echo "::error::sha is not a full commit SHA"; exit 1; }'
+          RECORD: ${{ inputs.record }}
+        run: |
+          [[ "$SHA" =~ ^[0-9a-f]{40}$ ]] || { echo "::error::sha is not a full commit SHA"; exit 1; }
+          [[ -z "$RECORD" || "$RECORD" =~ ^evals/v[0-9]+\.[0-9]+\.[0-9]+\.json$ ]] || { echo "::error::record is not evals/vX.Y.Z.json"; exit 1; }
+      # The default branch carries the scorer, the fixtures and the records;
+      # the candidate commit is fetched by SHA for its locks.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ inputs.sha }}
           persist-credentials: false
+      - name: Fetch the candidate
+        env:
+          SHA: ${{ inputs.sha }}
+        run: git fetch --no-tags --depth=1 origin "$SHA"
       - name: Score
         env:
           GH_TOKEN: ${{ github.token }}
           SHA: ${{ inputs.sha }}
-        run: python3 tests/eval/eval.py score --sha "$SHA" --out "$RUNNER_TEMP/eval.json" | tee -a "$GITHUB_STEP_SUMMARY"
+          RECORD: ${{ inputs.record }}
+        run: |
+          set -o pipefail
+          python3 tests/eval/eval.py score --sha "$SHA" ${RECORD:+--record "$RECORD"} --out "$RUNNER_TEMP/eval.json" | tee -a "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:

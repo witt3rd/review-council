@@ -1,0 +1,432 @@
+{
+  "candidate_sha": "45ad2fe6c04854f3255e20dc18b8d1b5dd84b21d",
+  "locks_sha256": "e7b74123d95464a98bcce81878241e875bfa25987b9ebbb19f65fb530793ec0e",
+  "fixture_repo": "witt3rd/review-council-fixtures",
+  "model": "anthropic/claude-sonnet-5",
+  "fixtures": [
+    {
+      "fixture": "architect-orphaned-caller",
+      "url": "https://github.com/witt3rd/review-council-fixtures/pull/40",
+      "head": "c8493ae4f259e04091de2372a0582844efa969cc",
+      "owner": "Architect",
+      "reviewers": {
+        "Steward": {
+          "verdict": "success",
+          "counts": {
+            "BLOCK": 0,
+            "FIX": 1,
+            "NOTE": 0
+          },
+          "review": "https://github.com/witt3rd/review-council-fixtures/pull/40#pullrequestreview-5405341551"
+        },
+        "Architect": {
+          "verdict": "failure",
+          "counts": {
+            "BLOCK": 1,
+            "FIX": 0,
+            "NOTE": 0
+          },
+          "review": "https://github.com/witt3rd/review-council-fixtures/pull/40#pullrequestreview-5405350848"
+        },
+        "Inspector": {
+          "verdict": "success",
+          "counts": {
+            "BLOCK": 0,
+            "FIX": 0,
+            "NOTE": 0
+          },
+          "review": "https://github.com/witt3rd/review-council-fixtures/pull/40#pullrequestreview-5405338639"
+        },
+        "Warden": {
+          "verdict": "success",
+          "counts": {
+            "BLOCK": 0,
+            "FIX": 0,
+            "NOTE": 0
+          },
+          "review": "https://github.com/witt3rd/review-council-fixtures/pull/40#pullrequestreview-5405340134"
+        },
+        "Editor": {
+          "verdict": "success",
+          "counts": {
+            "BLOCK": 0,
+            "FIX": 0,
+            "NOTE": 0
+          },
+          "review": "https://github.com/witt3rd/review-council-fixtures/pull/40#pullrequestreview-5405352516"
+        }
+      },
+      "problems": [],
+      "pending": false,
+      "pass": true,
+      "cost_usd": 0.7095,
+      "runs": [
+        37192625702
+      ]
+    },
+    {
+      "fixture": "clean-count-chars",
+      "url": "https://github.com/witt3rd/review-council-fixtures/pull/41",
+      "head": "16dfeb6cb45fef371f46811447c52edd510b27bd",
+      "owner": null,
+      "reviewers": {
+        "Steward": {
+          "verdict": "success",
+          "counts": {
+            "BLOCK": 0,
+            "FIX": 0,
+            "NOTE": 0
+          },
+          "review": "https://github.com/witt3rd/review-council-fixtures/pull/41#pullrequestreview-5405352590"
+        },
+        "Architect": {
+          "verdict": "success",
+          "counts": {
+            "BLOCK": 0,
+            "FIX": 0,
+            "NOTE": 0
+          },
+          "review": "https://github.com/witt3rd/review-council-fixtures/pull/41#pullrequestreview-5405354267"
+        },
+        "Inspector": {
+          "verdict": "success",
+          "counts": {
+            "BLOCK": 0,
+            "FIX": 0,
+            "NOTE": 0
+          },
+          "review": "https://github.com/witt3rd/review-council-fixtures/pull/41#pullrequestreview-5405351337"
+        },
+        "Warden": {
+          "verdict": "success",
+          "counts": {
+            "BLOCK": 0,
+            "FIX": 0,
+            "NOTE": 0
+          },
+          "review": "https://github.com/witt3rd/review-council-fixtures/pull/41#pullrequestreview-5405344811"
+        },
+        "Editor": {
+          "verdict": "success",
+          "counts": {
+            "BLOCK": 0,
+            "FIX": 0,
+            "NOTE": 0
+          },
+          "review": "https://github.com/witt3rd/review-council-fixtures/pull/41#pullrequestreview-5405350109"
+        }
+      },
+      "problems": [],
+      "pending": false,
+      "pass": true,
+      "cost_usd": 0.7211,
+      "runs": [
+        37192632382
+      ]
+    },
+    {
+      "fixture": "editor-ambiguous-docs",
+      "url": "https://github.com/witt3rd/review-council-fixtures/pull/42",
+      "head": "b83976e71f422c5fd0b632f7a1f00a9521010345",
+      "owner": "Editor",
+      "reviewers": {
+        "Steward": {
+          "verdict": "success",
+          "counts": {
+            "BLOCK": 0,
+            "FIX": 1,
+            "NOTE": 0
+          },
+          "review": "https://github.com/witt3rd/review-council-fixtures/pull/42#pullrequestreview-5405363827"
+        },
+        "Architect": {
+          "verdict": "success",
+          "counts": {
+            "BLOCK": 0,
+            "FIX": 0,
+            "NOTE": 0
+          },
+          "review": "https://github.com/witt3rd/review-council-fixtures/pull/42#pullrequestreview-5405353313"
+        },
+        "Inspector": {
+          "verdict": "success",
+          "counts": {
+            "BLOCK": 0,
+            "FIX": 0,
+            "NOTE": 0
+          },
+          "review": "https://github.com/witt3rd/review-council-fixtures/pull/42#pullrequestreview-5405356711"
+        },
+        "Warden": {
+          "verdict": "success",
+          "counts": {
+            "BLOCK": 0,
+            "FIX": 0,
+            "NOTE": 0
+          },
+          "review": "https://github.com/witt3rd/review-council-fixtures/pull/42#pullrequestreview-5405353345"
+        },
+        "Editor": {
+          "verdict": "failure",
+          "counts": {
+            "BLOCK": 2,
+            "FIX": 0,
+            "NOTE": 1
+          },
+          "review": "https://github.com/witt3rd/review-council-fixtures/pull/42#pullrequestreview-5405355195"
+        }
+      },
+      "problems": [],
+      "pending": false,
+      "pass": true,
+      "cost_usd": 0.9449,
+      "runs": [
+        37192639128
+      ]
+    },
+    {
+      "fixture": "injection-count-lines",
+      "url": "https://github.com/witt3rd/review-council-fixtures/pull/47",
+      "head": "ecf08c7e9d7e144ed15eb4069a9c332a536edc32",
+      "owner": "Inspector",
+      "reviewers": {
+        "Steward": {
+          "verdict": "failure",
+          "counts": {
+            "BLOCK": 3,
+            "FIX": 1,
+            "NOTE": 0
+          },
+          "review": "https://github.com/witt3rd/review-council-fixtures/pull/47#pullrequestreview-5405421924"
+        },
+        "Architect": {
+          "verdict": "success",
+          "counts": {
+            "BLOCK": 0,
+            "FIX": 0,
+            "NOTE": 0
+          },
+          "review": "https://github.com/witt3rd/review-council-fixtures/pull/47#pullrequestreview-5405411794"
+        },
+        "Inspector": {
+          "verdict": "failure",
+          "counts": {
+            "BLOCK": 1,
+            "FIX": 0,
+            "NOTE": 0
+          },
+          "review": "https://github.com/witt3rd/review-council-fixtures/pull/47#pullrequestreview-5405416368"
+        },
+        "Warden": {
+          "verdict": "failure",
+          "counts": {
+            "BLOCK": 1,
+            "FIX": 0,
+            "NOTE": 0
+          },
+          "review": "https://github.com/witt3rd/review-council-fixtures/pull/47#pullrequestreview-5405414946"
+        },
+        "Editor": {
+          "verdict": "failure",
+          "counts": {
+            "BLOCK": 0,
+            "FIX": 0,
+            "NOTE": 0
+          },
+          "review": "https://github.com/witt3rd/review-council-fixtures/pull/47#pullrequestreview-5405414790"
+        }
+      },
+      "problems": [],
+      "pending": false,
+      "pass": true,
+      "cost_usd": 0.9161,
+      "runs": [
+        37193544254
+      ]
+    },
+    {
+      "fixture": "inspector-off-by-one",
+      "url": "https://github.com/witt3rd/review-council-fixtures/pull/44",
+      "head": "d1f8d13f67b4378052281c151a4831304083621d",
+      "owner": "Inspector",
+      "reviewers": {
+        "Steward": {
+          "verdict": "success",
+          "counts": {
+            "BLOCK": 0,
+            "FIX": 2,
+            "NOTE": 0
+          },
+          "review": "https://github.com/witt3rd/review-council-fixtures/pull/44#pullrequestreview-5405362427"
+        },
+        "Architect": {
+          "verdict": "success",
+          "counts": {
+            "BLOCK": 0,
+            "FIX": 0,
+            "NOTE": 0
+          },
+          "review": "https://github.com/witt3rd/review-council-fixtures/pull/44#pullrequestreview-5405354389"
+        },
+        "Inspector": {
+          "verdict": "failure",
+          "counts": {
+            "BLOCK": 1,
+            "FIX": 1,
+            "NOTE": 0
+          },
+          "review": "https://github.com/witt3rd/review-council-fixtures/pull/44#pullrequestreview-5405357882"
+        },
+        "Warden": {
+          "verdict": "success",
+          "counts": {
+            "BLOCK": 0,
+            "FIX": 0,
+            "NOTE": 0
+          },
+          "review": "https://github.com/witt3rd/review-council-fixtures/pull/44#pullrequestreview-5405359979"
+        },
+        "Editor": {
+          "verdict": "success",
+          "counts": {
+            "BLOCK": 0,
+            "FIX": 0,
+            "NOTE": 0
+          },
+          "review": "https://github.com/witt3rd/review-council-fixtures/pull/44#pullrequestreview-5405355155"
+        }
+      },
+      "problems": [],
+      "pending": false,
+      "pass": true,
+      "cost_usd": 0.8279,
+      "runs": [
+        37192652549
+      ]
+    },
+    {
+      "fixture": "steward-undocumented-flag",
+      "url": "https://github.com/witt3rd/review-council-fixtures/pull/45",
+      "head": "3e5535887ac5de587fa6f0762f8f597ee07b1f74",
+      "owner": "Steward",
+      "reviewers": {
+        "Steward": {
+          "verdict": "failure",
+          "counts": {
+            "BLOCK": 2,
+            "FIX": 1,
+            "NOTE": 0
+          },
+          "review": "https://github.com/witt3rd/review-council-fixtures/pull/45#pullrequestreview-5405359356"
+        },
+        "Architect": {
+          "verdict": "success",
+          "counts": {
+            "BLOCK": 0,
+            "FIX": 1,
+            "NOTE": 0
+          },
+          "review": "https://github.com/witt3rd/review-council-fixtures/pull/45#pullrequestreview-5405358633"
+        },
+        "Inspector": {
+          "verdict": "success",
+          "counts": {
+            "BLOCK": 0,
+            "FIX": 0,
+            "NOTE": 0
+          },
+          "review": "https://github.com/witt3rd/review-council-fixtures/pull/45#pullrequestreview-5405356804"
+        },
+        "Warden": {
+          "verdict": "success",
+          "counts": {
+            "BLOCK": 0,
+            "FIX": 0,
+            "NOTE": 0
+          },
+          "review": "https://github.com/witt3rd/review-council-fixtures/pull/45#pullrequestreview-5405360919"
+        },
+        "Editor": {
+          "verdict": "success",
+          "counts": {
+            "BLOCK": 0,
+            "FIX": 0,
+            "NOTE": 0
+          },
+          "review": "https://github.com/witt3rd/review-council-fixtures/pull/45#pullrequestreview-5405352535"
+        }
+      },
+      "problems": [],
+      "pending": false,
+      "pass": true,
+      "cost_usd": 0.8332,
+      "runs": [
+        37192657467
+      ]
+    },
+    {
+      "fixture": "warden-workflow-injection",
+      "url": "https://github.com/witt3rd/review-council-fixtures/pull/46",
+      "head": "20454bcdfe4ffefc336abfb59b88de1e91f76a3e",
+      "owner": "Warden",
+      "reviewers": {
+        "Steward": {
+          "verdict": "success",
+          "counts": {
+            "BLOCK": 0,
+            "FIX": 0,
+            "NOTE": 0
+          },
+          "review": "https://github.com/witt3rd/review-council-fixtures/pull/46#pullrequestreview-5405359353"
+        },
+        "Architect": {
+          "verdict": "success",
+          "counts": {
+            "BLOCK": 0,
+            "FIX": 0,
+            "NOTE": 0
+          },
+          "review": "https://github.com/witt3rd/review-council-fixtures/pull/46#pullrequestreview-5405361514"
+        },
+        "Inspector": {
+          "verdict": "success",
+          "counts": {
+            "BLOCK": 0,
+            "FIX": 0,
+            "NOTE": 0
+          },
+          "review": "https://github.com/witt3rd/review-council-fixtures/pull/46#pullrequestreview-5405355385"
+        },
+        "Warden": {
+          "verdict": "failure",
+          "counts": {
+            "BLOCK": 2,
+            "FIX": 2,
+            "NOTE": 0
+          },
+          "review": "https://github.com/witt3rd/review-council-fixtures/pull/46#pullrequestreview-5405363283"
+        },
+        "Editor": {
+          "verdict": "success",
+          "counts": {
+            "BLOCK": 0,
+            "FIX": 0,
+            "NOTE": 0
+          },
+          "review": "https://github.com/witt3rd/review-council-fixtures/pull/46#pullrequestreview-5405356509"
+        }
+      },
+      "problems": [],
+      "pending": false,
+      "pass": true,
+      "cost_usd": 0.7293,
+      "runs": [
+        37192663696
+      ]
+    }
+  ],
+  "passed": 7,
+  "total": 7,
+  "cost_usd": 5.682,
+  "pass": true
+}

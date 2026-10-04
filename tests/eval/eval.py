@@ -143,12 +143,17 @@ def parse_review(body):
     return counts
 
 
-def score_pr(repo, name, sha):
+def score_pr(repo, name, sha, number=None, head=None):
+    """Score one fixture PR: the open PR of its branch, or `number` at `head`
+    (re-scoring a recorded eval after newer runs closed its PRs)."""
     expect = json.loads((FIXTURES / "prs" / name / "pr.json").read_text())["expect"]
-    prs = gh_json("pr", "list", "-R", repo, "--head", f"fixture/{name}", "--state", "open", "--json", "number,url,headRefOid,baseRefOid")
-    if not prs:
-        return {"fixture": name, "pending": True, "problems": ["no open fixture PR"]}
-    pr = prs[0]
+    if number:
+        pr = {"number": number, "url": f"https://github.com/{repo}/pull/{number}", "headRefOid": head}
+    else:
+        prs = gh_json("pr", "list", "-R", repo, "--head", f"fixture/{name}", "--state", "open", "--json", "number,url,headRefOid")
+        if not prs:
+            return {"fixture": name, "pending": True, "problems": ["no open fixture PR"]}
+        pr = prs[0]
     head = pr["headRefOid"]
     caller = sh("gh", "api", "-H", "Accept: application/vnd.github.raw", f"repos/{repo}/contents/{CALLER_PATH}?ref={head}")
     if f"@{sha} " not in caller:
@@ -207,7 +212,11 @@ def run_cost(repo, head):
 
 def cmd_score(args):
     sha = sh("git", "rev-parse", args.sha, cwd=ROOT).strip()
-    results = [score_pr(args.repo, n, sha) for n in fixtures(args.only)]
+    recorded = {}
+    if args.record:
+        for f in json.loads(Path(args.record).read_text())["fixtures"]:
+            recorded[f["fixture"]] = (int(f["url"].rsplit("/", 1)[1]), f["head"])
+    results = [score_pr(args.repo, n, sha, *recorded.get(n, (None, None))) for n in fixtures(args.only)]
     pending = any(r["pending"] for r in results)
     record = {
         "candidate_sha": sha,
@@ -249,6 +258,7 @@ def main():
         if name == "score":
             p.add_argument("--out", help="write the eval record here (e.g. evals/v0.1.0.json)")
             p.add_argument("--baseline", help="the last release's eval record; a candidate must not do worse")
+            p.add_argument("--record", help="re-score the PRs an eval record names (after newer runs closed them)")
     args = ap.parse_args()
     if args.cmd == "locks":
         print(locks_sha256(sh("git", "rev-parse", args.sha, cwd=ROOT).strip()))

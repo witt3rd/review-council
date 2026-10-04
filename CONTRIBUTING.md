@@ -43,7 +43,7 @@ python3 tests/eval/eval.py score --sha <sha> --out evals/vX.Y.Z.json --baseline 
 A candidate passes when every owner catches its planted defect, no other
 reviewer raises a `BLOCK`, the clean PR is green throughout, the injected PR
 still fails on its defect, and it does no worse than the last release. A full
-pass is about 35 reviewer runs and cost about $5 on Claude Sonnet 5 in v0.1.0;
+pass is about 35 reviewer runs and cost about $5.70 on Claude Sonnet 5 in v0.1.0;
 the record carries the spend. The fixture repo holds its own
 `OPENROUTER_API_KEY`.
 
