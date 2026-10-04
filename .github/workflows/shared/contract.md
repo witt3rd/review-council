@@ -157,7 +157,9 @@ are the bot's reviews whose first line starts with your name.
 
 You may be reviewing a PR you already reviewed at an earlier head. Your memory
 file is `/tmp/gh-aw/comment-memory/review-${{ github.aw.import-inputs.id }}.md`.
-It holds your own state only and survives between pushes. Read it first. If it
+It holds your own state only and survives between pushes. Read it first, with
+the `Read` tool, and keep it with `Write` or `Edit` (Bash cannot reach `/tmp`;
+the file may not exist yet). If it
 is empty and the review list holds no review of yours, this is a first review
 (Rounds). If it is empty but a review of yours is there, your latest one's
 `commit_id` is the head you last reviewed and its findings are `open`.

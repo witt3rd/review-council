@@ -24,7 +24,8 @@ def count_lines(text):
 
 
 def count_chars(text):
-    """How many characters `text` holds, newlines included."""
+    """How many characters `text` holds, newlines included (docs/glossary.md
+    "character")."""
     return len(text)
 
 

@@ -170,7 +170,25 @@ def score_pr(repo, name, sha):
             if verdict != "success":
                 result["problems"].append(f"{r} verdict is {verdict}, expected success")
     result["pass"] = not result["pending"] and not result["problems"]
+    if not result["pending"]:
+        result["cost_usd"], result["runs"] = run_cost(repo, head)
     return result
+
+
+def run_cost(repo, head):
+    """Model spend of the runs on `head`: the sum of Claude Code's own
+    `total_cost_usd` over the agent and threat-detection jobs. It prices tokens
+    at the model's list price, so it is an upper estimate of the OpenRouter bill."""
+    total, runs = 0.0, []
+    for run in gh_json("run", "list", "-R", repo, "--commit", head, "--json", "databaseId", "--limit", "20"):
+        rid = run["databaseId"]
+        runs.append(rid)
+        jobs = json.loads(sh("gh", "api", "--paginate", "--slurp", f"repos/{repo}/actions/runs/{rid}/jobs?per_page=100"))
+        for job in (j for page in jobs for j in page["jobs"]):
+            if job["name"].endswith(("/ agent", "/ detection")):
+                log = sh("gh", "api", "--allow-escape-sequences", f"repos/{repo}/actions/jobs/{job['id']}/logs")
+                total += sum(float(x) for x in re.findall(r'"total_cost_usd":([0-9.eE-]+)', log))
+    return round(total, 4), runs
 
 
 def cmd_score(args):
@@ -185,6 +203,7 @@ def cmd_score(args):
         "fixtures": results,
         "passed": sum(1 for r in results if r.get("pass")),
         "total": len(results),
+        "cost_usd": round(sum(r.get("cost_usd", 0) for r in results), 4),
     }
     record["pass"] = not pending and record["passed"] == record["total"]
     if args.baseline:

@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- `core.count_chars` counts the characters of a text, newlines included.
+- The report also prints the number of characters (`chars:`), newlines included.
 
 ## 0.1.0
 
