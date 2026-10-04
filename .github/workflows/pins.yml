@@ -1,0 +1,28 @@
+name: pins
+
+# The class remedy for review automation copied per repo and left to drift:
+# one report of every caller's pin against the newest release (callers.txt).
+on:
+  schedule:
+    - cron: "17 6 * * 1"
+  workflow_dispatch:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+jobs:
+  report:
+    name: every caller's pin against the newest release
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # GITHUB_TOKEN reads public callers; a private one shows as unreadable.
+      - name: Report
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 tools/pins.py

@@ -1,0 +1,68 @@
+# The review council's thin caller. Copy it to .github/workflows/review-council.yml
+# in your repo, keep one job per reviewer you want, and pin every `uses:` to one
+# release: its full commit SHA, with the tag as a comment. The release notes of
+# https://github.com/witt3rd/review-council print this file with both filled in.
+#
+# Each reviewer sets one commit status, `<Reviewer> verdict`, on the PR head it
+# reviewed. Require those statuses in your branch ruleset.
+name: Review council
+
+on:
+  pull_request:
+    types: [opened, reopened, ready_for_review, synchronize]
+
+permissions: {}
+
+# A newer push cancels the review of the older head: only the latest head's
+# verdicts count.
+concurrency:
+  group: review-council-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  steward:
+    # Drafts never run; a fork PR gets no secrets, so it is never called.
+    if: &same-repo-ready >-
+      !github.event.pull_request.draft &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    uses: witt3rd/review-council/.github/workflows/steward.lock.yml@COUNCIL_SHA # COUNCIL_TAG
+    # Every permission the council's jobs use; a called workflow gets no more.
+    permissions: &council-permissions
+      actions: read
+      contents: read
+      issues: write
+      pull-requests: write
+      statuses: write
+    with: &council-inputs
+      model: anthropic/claude-sonnet-5
+    secrets: &council-secrets
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+
+  architect:
+    if: *same-repo-ready
+    uses: witt3rd/review-council/.github/workflows/architect.lock.yml@COUNCIL_SHA # COUNCIL_TAG
+    permissions: *council-permissions
+    with: *council-inputs
+    secrets: *council-secrets
+
+  inspector:
+    if: *same-repo-ready
+    uses: witt3rd/review-council/.github/workflows/inspector.lock.yml@COUNCIL_SHA # COUNCIL_TAG
+    permissions: *council-permissions
+    with: *council-inputs
+    secrets: *council-secrets
+
+  warden:
+    if: *same-repo-ready
+    uses: witt3rd/review-council/.github/workflows/warden.lock.yml@COUNCIL_SHA # COUNCIL_TAG
+    permissions: *council-permissions
+    with: *council-inputs
+    secrets: *council-secrets
+
+  # A documents repo swaps the Warden for the Editor:
+  # editor:
+  #   if: *same-repo-ready
+  #   uses: witt3rd/review-council/.github/workflows/editor.lock.yml@COUNCIL_SHA # COUNCIL_TAG
+  #   permissions: *council-permissions
+  #   with: *council-inputs
+  #   secrets: *council-secrets

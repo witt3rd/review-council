@@ -1,0 +1,69 @@
+name: release
+
+# Tags a version only after its golden-PR evals passed: the newest `## vX.Y.Z`
+# in CHANGELOG.md needs evals/vX.Y.Z.json, passing, recorded against exactly
+# the locks on this commit. Releases are immutable (repo setting), so a tag
+# never moves and a caller's `@<sha> # vX.Y.Z` pin stays true.
+on:
+  push:
+    branches: [main]
+    paths: [CHANGELOG.md, "evals/**"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: The version to release
+        id: version
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          v=$(grep -m1 -oE '^## v[0-9]+\.[0-9]+\.[0-9]+$' CHANGELOG.md | cut -c4- || true)
+          if [ -z "$v" ]; then echo "No released version in CHANGELOG.md; nothing to tag."; exit 0; fi
+          if gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$v" >/dev/null 2>&1; then echo "$v is already tagged."; exit 0; fi
+          echo "version=$v" >> "$GITHUB_OUTPUT"
+      - name: The evals passed on these locks
+        if: steps.version.outputs.version
+        env:
+          V: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          record="evals/$V.json"
+          [ -f "$record" ] || { echo "::error::no eval record $record"; exit 1; }
+          jq -e '.pass == true' "$record" >/dev/null || { echo "::error::$record does not pass"; exit 1; }
+          want=$(jq -r .locks_sha256 "$record")
+          have=$(python3 tests/eval/eval.py locks --sha HEAD)
+          [ "$want" = "$have" ] || { echo "::error::$record was scored on other locks ($want), these are $have"; exit 1; }
+          jq -r '"Evals: \(.passed)/\(.total) golden PRs passed, about $\(.cost_usd) on \(.model)."' "$record"
+      - name: Tag and publish
+        if: steps.version.outputs.version
+        env:
+          GH_TOKEN: ${{ github.token }}
+          V: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          {
+            awk -v v="## $V" '$0==v{p=1;next} /^## /{if(p)exit} p' CHANGELOG.md
+            echo
+            echo "Pin it: copy this caller to \`.github/workflows/review-council.yml\` (keep the reviewers you want)."
+            echo
+            echo '```yaml'
+            sed "s/@COUNCIL_SHA # COUNCIL_TAG/@$GITHUB_SHA # $V/" caller/review-council.yml
+            echo '```'
+          } > "$RUNNER_TEMP/notes.md"
+          gh release create "$V" --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title "$V" --notes-file "$RUNNER_TEMP/notes.md"

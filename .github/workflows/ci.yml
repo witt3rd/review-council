@@ -1,0 +1,61 @@
+name: ci
+
+# The static tier: every council PR, no model, no key. A reviewer change is
+# released only after this and the golden-PR evals (tests/eval/) pass.
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  locks:
+    name: locks are compiled from their sources
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Fetch the pinned compiler
+        run: |
+          set -euo pipefail
+          . .github/aw/compiler-pin.env
+          curl -fsSL -o "$RUNNER_TEMP/gh-aw" "https://github.com/github/gh-aw/releases/download/$GH_AW_VERSION/linux-amd64"
+          echo "$GH_AW_SHA256  $RUNNER_TEMP/gh-aw" | sha256sum -c -
+          chmod +x "$RUNNER_TEMP/gh-aw"
+      # A source edit without `gh aw compile` ships a lock that is not what the
+      # source says; callers run the lock.
+      - name: Recompile and require no diff
+        run: |
+          set -euo pipefail
+          "$RUNNER_TEMP/gh-aw" compile --no-check-update
+          if [ -n "$(git status --porcelain -- .github)" ]; then
+            git status --porcelain -- .github
+            git diff -- .github
+            echo "::error::lock files are stale: run 'gh aw compile' with the pinned gh-aw and commit the result"
+            exit 1
+          fi
+      - name: Lint the locks (actionlint)
+        run: '"$RUNNER_TEMP/gh-aw" lint'
+
+  tests:
+    name: contract, caller, verdict and guard tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install the test dependency (hash-pinned)
+        run: |
+          python3 -m venv "$RUNNER_TEMP/venv"
+          "$RUNNER_TEMP/venv/bin/pip" install --quiet --require-hashes -r tests/requirements.txt
+      - name: Roster, scope, frontmatter, lock, caller and consumer-name checks
+        run: '"$RUNNER_TEMP/venv/bin/python" -m unittest discover -s tests -p "*_test.py" -v'
+      - name: Verdict script on recorded reviews
+        run: node --test tests/verdict.test.mjs
+      - name: Tools compile
+        run: python3 -m py_compile tests/eval/eval.py tools/pins.py

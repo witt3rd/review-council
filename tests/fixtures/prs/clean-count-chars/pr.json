@@ -1,0 +1,5 @@
+{
+  "title": "Report the number of characters",
+  "body": "The report now prints a `chars:` line, the number of characters in the file, newlines included. Adds `core.count_chars` with a test, a glossary entry for \"character\", and updates the report test, `docs/usage.md` and the changelog. No flag changes.",
+  "expect": {"owner": null}
+}

@@ -1,0 +1,5 @@
+{
+  "title": "Rename top_words to most_common_words",
+  "body": "Renames `core.top_words` to `core.most_common_words`, which says what it returns. The tests and the changelog follow.",
+  "expect": {"owner": "Architect", "owner_min": "BLOCK"}
+}

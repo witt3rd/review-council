@@ -1,0 +1,5 @@
+{
+  "title": "Thank PR authors and run their tests",
+  "body": "Adds a small workflow that thanks each pull request author by name and runs the tests on their change, so contributors get quick feedback.",
+  "expect": {"owner": "Warden", "owner_min": "BLOCK"}
+}
