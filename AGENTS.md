@@ -77,8 +77,6 @@ python3 tools/pins.py                                       # every caller's pin
   https://github.com/witt3rd/review-council-fixtures). Fixture PRs carry
   planted defects and an injection on purpose; never merge one.
 - `evals/` — one record per release; `release.yml` tags only on a passing one.
-- `docs/` — `callers.md` (pinning, principles file), `eval-runbook.md`
-  (operating the eval harness).
 - `CONTRIBUTING.md` — how a change is made, evaluated and released.
 - `CHANGELOG.md` — every release with its eval scores and spend.
 
