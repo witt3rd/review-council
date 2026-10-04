@@ -81,4 +81,4 @@ python3 tests/eval/suite.py --sha <candidate> --baseline evals/<last>.json [--ma
 spend from the baseline record and refuses (exit 3) when that is over
 `--max-usd`; after scoring it fails (exit 1) when measured spend exceeded the
 cap or a fixture regressed; exit 2 means reviews were still pending at
-`--timeout`. `--dry-run` prints the estimate and commands and spends nothing.
+`--timeout`. With `--only`, the baseline is cut to the chosen fixtures first, so a passing subset is no regression. `--dry-run` prints the estimate and commands and spends nothing.
