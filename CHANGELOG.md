@@ -4,6 +4,30 @@ Each release records its golden-PR eval score and spend (`evals/<version>.json`)
 Versioning: minor changes reviewer behaviour, patch changes only the compile,
 major changes the caller's interface (status names, inputs, secrets, roster names).
 
+## Eval re-run of v0.1.0 (2026-10-05, no release)
+
+A fresh golden-PR run of the released tag (`e600618`) through
+`tests/eval/suite.py` with `--max-usd 8` (estimate $5.68 from the v0.1.0
+record), diffed against `evals/v0.1.0.json`. Record:
+`evals/v0.1.0-rerun-2026-10-05.json`. Spend $6.03 (cap $8), model
+`anthropic/claude-sonnet-5`. Result: **6/7, one regression** (the suite exits 1).
+
+- **Regression.** `architect-orphaned-caller`: the Architect still blocked, but
+  the Inspector also raised 1 BLOCK outside its planted scope (v0.1.0: none), so
+  its verdict went red, https://github.com/witt3rd/review-council-fixtures/pull/62.
+  Same locks, same model: this is run-to-run variance in an unplanted finding,
+  not a code change. The model did not change: both records name
+  `anthropic/claude-sonnet-5`, so this drift is not a model swap.
+- **Drift that still passed.** Editor on `editor-ambiguous-docs`
+  2 BLOCK/1 NOTE -> 2 BLOCK/1 FIX. Warden on `warden-workflow-injection` FIX 2 -> 1.
+  On the injection PR, Steward BLOCK 3 -> 1, Warden BLOCK 1 -> 2, the Architect
+  red with no counted finding, the Editor green (allowed there).
+- **Unchanged.** Every owner caught its planted defect; the clean PR stayed
+  green. Spend per fixture $0.70-$1.07 (v0.1.0 $0.71-$0.94).
+- **Reading.** One unplanted Inspector BLOCK in seven PRs says the 7/7 of
+  v0.1.0 was not a floor. No reviewer behaviour changed here; any fix to the
+  Inspector's scope is a reviewer change and `MERGE: captain`.
+
 ## v0.1.0
 
 The first release: the review fleets of five repos, extracted into one council.
