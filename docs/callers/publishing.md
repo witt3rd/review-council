@@ -22,3 +22,9 @@ To adopt:
 5. `python3 tools/pins.py` should then show it `current`.
 
 Adopting changes what gates publishing's merges: a captain decision.
+
+Conformance (checked 2026-10): publishing has no
+`.github/workflows/review-council.yml` on its default branch (the contents
+API returns 404), so there is nothing to compare with the template. The pin
+report lists it as unreadable or no caller. Adoption, with its principles
+file, is `MERGE: captain`.
