@@ -16,7 +16,8 @@ record), diffed against `evals/v0.1.0.json`. Record:
   the Inspector also raised 1 BLOCK outside its planted scope (v0.1.0: none), so
   its verdict went red, https://github.com/witt3rd/review-council-fixtures/pull/62.
   Same locks, same model: this is run-to-run variance in an unplanted finding,
-  not a code change.
+  not a code change. The model did not change: both records name
+  `anthropic/claude-sonnet-5`, so this drift is not a model swap.
 - **Drift that still passed.** Editor on `editor-ambiguous-docs`
   2 BLOCK/1 NOTE -> 2 BLOCK/1 FIX. Warden on `warden-workflow-injection` FIX 2 -> 1.
   On the injection PR, Steward BLOCK 3 -> 1, Warden BLOCK 1 -> 2, the Architect
