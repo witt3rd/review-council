@@ -64,6 +64,27 @@ closed them). Use it to check a record you did not write.
 - LLM output varies. A single miss is evidence; rerun only the one fixture
   with `--only` to see whether it is stable before drawing a conclusion.
 
+## Later rounds
+
+Most fixtures are first reviews. `inspector-off-by-one-fixed` and
+`inspector-off-by-one-unfixed` carry a second round: after the first head is
+reviewed, a push either fixes the planted BLOCK (`rounds/2/` corrects the
+off-by-one) or leaves it (a comment and a test tweak). They are left out of the
+default set; name them. All five reviewers are scored on the follow-up head: the
+owner must pass in `-fixed` and still BLOCK in `-unfixed`; the others must pass.
+
+```bash
+S=<candidate>; N="inspector-off-by-one-fixed inspector-off-by-one-unfixed"
+python3 tests/eval/eval.py run      --sha $S --only $N   # round 1
+python3 tests/eval/eval.py score    --sha $S --only $N   # wait until none is pending
+python3 tests/eval/eval.py followup --sha $S --only $N   # push round 2 (waits for round 1)
+python3 tests/eval/eval.py score    --sha $S --only $N --round 2
+```
+
+Cost is two fixtures x two rounds x five reviewers; `suite.py` does not run
+rounds. To add one, put `rounds` in `pr.json` and the commit in
+`rounds/2/files/`.
+
 ## Adding a fixture
 
 Add `tests/fixtures/prs/<name>/` with `files/` (laid over `base/`) and
