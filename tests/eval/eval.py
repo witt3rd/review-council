@@ -5,6 +5,10 @@
                              fresh PR per fixture (needs push rights there)
   eval.py score --sha SHA    score those PRs; exit 0 pass, 1 fail, 2 pending
                              (needs only read access: the fixture repo is public)
+  eval.py followup --sha SHA --only NAME ...
+                             push the next round's commit to those fixtures' open
+                             PRs, once the round before is fully reviewed
+  eval.py score --sha SHA --round 2 --only NAME ...   score the follow-up heads
   eval.py locks [--sha SHA]  the hash of the five locks, as an eval record holds it
 
 The fixture repo is rebuilt from tests/fixtures/ on every run: `base/` is its
@@ -20,6 +24,11 @@ Scoring, per fixture PR, against the head commit:
   - no other reviewer raised a BLOCK, and every other verdict passed, except
     the reviewers `expect.allowed` names: their scope also reaches the PR (the
     Warden may flag an injection), so they may, but need not.
+Later rounds: a fixture whose pr.json has `rounds` (a list of {"message",
+"expect"}) is left out of the default set; name it with --only. Round k's
+commit is `prs/<name>/rounds/<k>/files/` laid over the branch. Its expect may
+say `owner_min: "PASS"`: the owner must then raise no BLOCK and pass (the push
+fixed the earlier BLOCK); `owner_min: "BLOCK"` means it must still BLOCK.
 A clean fixture (`owner: null`) passes only with no BLOCK and every verdict green.
 Uses the gh CLI for every GitHub call. Standard library only.
 """
@@ -54,7 +63,13 @@ def gh_json(*args):
 
 def fixtures(only=None):
     names = sorted(p.name for p in (FIXTURES / "prs").iterdir() if p.is_dir())
+    if not only:
+        names = [n for n in names if "rounds" not in load_pr(n)]
     return [n for n in names if not only or n in only]
+
+
+def load_pr(name):
+    return json.loads((FIXTURES / "prs" / name / "pr.json").read_text())
 
 
 def caller_text(sha, label):
@@ -143,10 +158,16 @@ def parse_review(body):
     return counts
 
 
-def score_pr(repo, name, sha, number=None, head=None):
+def score_pr(repo, name, sha, number=None, head=None, rnd=1):
     """Score one fixture PR: the open PR of its branch, or `number` at `head`
     (re-scoring a recorded eval after newer runs closed its PRs)."""
-    expect = json.loads((FIXTURES / "prs" / name / "pr.json").read_text())["expect"]
+    spec = load_pr(name)
+    if rnd > 1:
+        if len(spec.get("rounds", [])) < rnd - 1:
+            return {"fixture": name, "skipped": True, "pending": False, "pass": True, "problems": []}
+        expect = spec["rounds"][rnd - 2]["expect"]
+    else:
+        expect = spec["expect"]
     if number:
         pr = {"number": number, "url": f"https://github.com/{repo}/pull/{number}", "headRefOid": head}
     else:
@@ -176,6 +197,10 @@ def score_pr(repo, name, sha, number=None, head=None):
             result["problems"].append(f"{r}: no parseable review of the head")
             continue
         if r == owner:
+            if expect["owner_min"] == "PASS":
+                if counts["BLOCK"] > 0 or verdict != "success":
+                    result["problems"].append(f"{r} (owner) did not clear the fixed finding: {counts}, verdict {verdict}")
+                continue
             caught = counts["BLOCK"] > 0 if expect["owner_min"] == "BLOCK" else counts["BLOCK"] + counts["FIX"] > 0
             if not caught:
                 result["problems"].append(f"{r} (owner) missed the planted defect: {counts}")
@@ -216,7 +241,7 @@ def cmd_score(args):
     if args.record:
         for f in json.loads(Path(args.record).read_text())["fixtures"]:
             recorded[f["fixture"]] = (int(f["url"].rsplit("/", 1)[1]), f["head"])
-    results = [score_pr(args.repo, n, sha, *recorded.get(n, (None, None))) for n in fixtures(args.only)]
+    results = [score_pr(args.repo, n, sha, *recorded.get(n, (None, None)), rnd=args.round) for n in fixtures(args.only)]
     pending = any(r["pending"] for r in results)
     record = {
         "candidate_sha": sha,
@@ -245,17 +270,55 @@ def cmd_score(args):
     return 2 if pending else (0 if record["pass"] else 1)
 
 
+def cmd_followup(args):
+    """Push round 2 to each named fixture's open PR once its head is settled."""
+    if not args.only:
+        sys.exit("followup needs --only NAME ...")
+    with tempfile.TemporaryDirectory() as tmp:
+        work = Path(tmp) / "fixtures"
+        sh("gh", "repo", "clone", args.repo, str(work), "--", "-q")
+        for name in fixtures(args.only):
+            spec = load_pr(name)
+            src = FIXTURES / "prs" / name / "rounds" / "2"
+            if not spec.get("rounds") or not src.is_dir():
+                print(f"{name}: no round 2")
+                continue
+            branch = f"fixture/{name}"
+            prs = gh_json("pr", "list", "-R", args.repo, "--head", branch, "--state", "open", "--json", "number,headRefOid")
+            if not prs:
+                print(f"{name}: no open PR (run it first)")
+                continue
+            head = prs[0]["headRefOid"]
+            ctx = {s["context"]: s["state"] for s in json.loads(sh("gh", "api", f"repos/{args.repo}/commits/{head}/status"))["statuses"]}
+            waiting = [r for r in ROSTER if ctx.get(f"{r} verdict") in (None, "pending")]
+            if waiting:
+                print(f"{name}: round 1 not settled ({', '.join(waiting)}); try later")
+                continue
+            sh("git", "fetch", "-q", "origin", branch, cwd=work)
+            sh("git", "checkout", "-q", "-B", branch, f"origin/{branch}", cwd=work)
+            if sh("git", "log", "-1", "--format=%s", cwd=work).strip() == spec["rounds"][0]["message"]:
+                print(f"{name}: round 2 already pushed")
+                continue
+            copy_tree(src / "files", work)
+            sh("git", "add", "-A", cwd=work)
+            sh("git", "commit", "-qm", spec["rounds"][0]["message"], cwd=work)
+            sh("git", "push", "-q", "origin", branch, cwd=work)
+            print(f"{name}: pushed round 2 to PR #{prs[0]['number']}")
+    return 0
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
     p = sub.add_parser("locks", help="print the hash of the five locks at a commit (release.yml checks it)")
     p.add_argument("--sha", default="HEAD")
-    for name in ("run", "score"):
+    for name in ("run", "score", "followup"):
         p = sub.add_parser(name)
         p.add_argument("--sha", required=True, help="council commit under test")
         p.add_argument("--repo", default=DEFAULT_REPO)
         p.add_argument("--only", nargs="*", help="fixture names (default: all)")
         if name == "score":
+            p.add_argument("--round", type=int, default=1, help="2 scores the follow-up heads of multi-round fixtures")
             p.add_argument("--out", help="write the eval record here (e.g. evals/v0.1.0.json)")
             p.add_argument("--baseline", help="the last release's eval record; a candidate must not do worse")
             p.add_argument("--record", help="re-score the PRs an eval record names (after newer runs closed them)")
@@ -263,7 +326,7 @@ def main():
     if args.cmd == "locks":
         print(locks_sha256(sh("git", "rev-parse", args.sha, cwd=ROOT).strip()))
         sys.exit(0)
-    sys.exit(cmd_run(args) if args.cmd == "run" else cmd_score(args))
+    sys.exit({"run": cmd_run, "score": cmd_score, "followup": cmd_followup}[args.cmd](args))
 
 
 if __name__ == "__main__":
